@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import granguil.data.entity.Book;
 import granguil.data.request.BlockListRequest;
 import granguil.data.request.BookMarkRequest;
 import granguil.data.request.DeleteBookMarkRequest;
@@ -52,7 +53,7 @@ public ReadResponse getContentById(@PathVariable(name="level")int level,@PathVar
 @CrossOrigin(origins="*")
 StringResponse uploadWord(@RequestParam MultipartFile newText,@RequestParam String nameFile,@RequestParam boolean NewUniverse) throws Exception {
 	String location= fileLocationService.save(newText.getBytes(), newText.getOriginalFilename(),nameFile);
-    String message=readService.Convert(location,NewUniverse,false,0,null);
+    String message=readService.Convert(location,NewUniverse,false,0,null,null);
     StringResponse sr=new StringResponse();
     sr.setMessage(message);
     return sr;
@@ -62,11 +63,12 @@ StringResponse uploadWord(@RequestParam MultipartFile newText,@RequestParam Stri
 @CrossOrigin(origins="*")
 StringResponse updateText(@RequestParam MultipartFile newText,@RequestParam String nameFile,@RequestParam String universe,@RequestParam String textName) throws Exception {
 	String message="";
-	if(readService.deleteText(universe,textName)) {
+	Book book=readService.searchText(universe,textName);
+	if(book!=null) {
 		String location= fileLocationService.save(newText.getBytes(), newText.getOriginalFilename(),nameFile);
-	    message=readService.Convert(location,false,false,0,null);
+	    message=readService.Convert(location,false,false,0,null,book);
 	}else {
-		message="Delete Failed";
+		message=textName+" doesn't exist for "+universe;
 	}
 	StringResponse sr=new StringResponse();
     sr.setMessage(message);
@@ -79,7 +81,7 @@ StringResponse newChapter(@RequestParam MultipartFile newText,@RequestParam Stri
 	String message="";
     if(readService.isTextInUniverse(textName, universe)) {
     	String location= fileLocationService.save(newText.getBytes(), newText.getOriginalFilename(),nameFile);
-	    message=readService.Convert(location,false,true,0,textName);
+	    message=readService.Convert(location,false,true,0,textName,null);
     }else {
     	message="No Text with its name in the "+universe;
     }
@@ -94,7 +96,7 @@ StringResponse updateChapter(@RequestParam MultipartFile newText,@RequestParam S
 	String message="";
 	if(readService.isTextInUniverse(textName, universe)) {
     	String location= fileLocationService.save(newText.getBytes(), newText.getOriginalFilename(),nameFile);
-	    message=readService.Convert(location,false,true,numero,textName);
+	    message=readService.Convert(location,false,true,numero,textName,null);
     }else {
     	message="No Text with its name in the "+universe;
     }

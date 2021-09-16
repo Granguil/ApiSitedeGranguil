@@ -1,6 +1,7 @@
 package granguil.data.entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -46,7 +47,7 @@ public class Scene implements Serializable {
 	@OneToMany(mappedBy="sceneAssociated", cascade = CascadeType.ALL)
 	@JsonManagedReference
 	@JsonInclude(Include.NON_EMPTY)
-	private List<Block> blocks;
+	private List<Block> blocks=new ArrayList<Block>();
 
 	@Transient
 	private ReadState status=ReadState.NotRead;
@@ -109,7 +110,11 @@ public class Scene implements Serializable {
 		this.numero = numero;
 		this.info = info;
 		this.chapterAssociated = chapter_associated;
+		if(blocks==null) {
+			this.blocks=new ArrayList<Block>();
+		}else {
 		this.blocks = blocks;	
+		}
 	}
 
 

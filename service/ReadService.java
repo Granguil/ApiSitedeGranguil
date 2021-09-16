@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
@@ -16,6 +17,7 @@ import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import granguil.data.Enum.BlockState;
 import granguil.data.Enum.CurrentState;
 import granguil.data.Enum.ReadState;
 import granguil.data.entity.Block;
@@ -87,20 +89,34 @@ public String saveBlocks(BlockListRequest blr) {
 			scene.getChapterAssociated().getBookAssociated().setCurrentState(CurrentState.PUBLISH);
 			scene.getChapterAssociated().getBookAssociated().getUniverseAssociated().setCurrentState(CurrentState.PUBLISH);
 		}
-		System.out.println("Universe : "+scene.getChapterAssociated().getBookAssociated().getUniverseAssociated().getTitle());
-		System.out.println("Book : "+scene.getChapterAssociated().getBookAssociated().getTitle());
-		System.out.println("Chapter : "+scene.getChapterAssociated().getTitle());
+		boolean removingBlock=false;
 		for(BlockRequest br:blr.blocks) {
-			System.out.println("Req : "+br.getId());
-			System.out.println(br.getContent());
-			for(Block block:scene.getBlocks()) {
-				System.out.println("Sc : "+block.getId());
-				System.out.println("Sc : "+block.getContentBlock());
+			if(br.getStatus().equals(BlockState.NEW)) {
+				Block newBlock=new Block();
+				newBlock.setContentBlock(br.getContent());
+				newBlock.setOrder(br.getOrder());
+				newBlock.setSceneAssociated(scene);
+				scene.getBlocks().add(newBlock);
+			}else {
+				Block b=scene.getBlocks().stream().filter(x->x.getId().equals(UUID.fromString(br.getId()))).collect(Collectors.toList()).get(0);
+				if(br.getStatus().equals(BlockState.DELETE)) {
+					scene.getBlocks().remove(b);
+					blockRepository.delete(b);
+					removingBlock=true;
+				}else {
+					b.setContentBlock(br.getContent());
+					b.setOrder(br.getOrder());
+				}
+			
 			}
-			System.out.println("Size : "+scene.getBlocks().stream().filter(x->x.getId()==UUID.fromString(br.getId())).collect(Collectors.toList()).size());
-			Block b=scene.getBlocks().stream().filter(x->x.getId().equals(UUID.fromString(br.getId()))).collect(Collectors.toList()).get(0);
-			b.setContentBlock(br.getContent());
-			b.setOrder(br.getOrder());
+		}
+		if(removingBlock) {
+			Collections.sort(scene.getBlocks(), (x,y)->x.getOrder()-y.getOrder());
+			int newOrder=1;
+			for(Block blockToOrder:scene.getBlocks()) {
+				blockToOrder.setOrder(newOrder);
+				newOrder++;
+			}
 		}
 		sceneRepository.save(scene);
 		message="Update Success";
@@ -292,17 +308,16 @@ public void isReading(BookMarkRequest bmr) {
 	}*/
 }
 
-public boolean deleteText(String universe,String textName) {
+public Book searchText(String universe,String textName) {
 	try {
 		Book book=bookRepository.findByTitle(textName).get();
 		if(book.getUniverseAssociated().getTitle().equals(universe)) {
-			bookRepository.delete(book);
+			return book;
 		}else {
-			return false;
+			return null;
 		}
-		return true;
 	}catch(Exception e) {
-		return false;
+		return null;
 	}
 }
 
@@ -319,7 +334,193 @@ public boolean isTextInUniverse(String bookName, String universe) {
 	}
 }
 
-public String Convert(String location,boolean newUniverse,boolean isNewChapter,int numChapter,String bookName) {
+public String Convert(String location,boolean newUniverse,boolean isNewChapter,int numChapter,String bookName,Book bookToReplace) {
+	XWPFDocument docx=null;
+	LastCreated lc=LastCreated.None;
+	String message = null;
+	try {
+		docx = new XWPFDocument(new FileInputStream(location));
+	
+    XWPFNumbering numbering=new XWPFNumbering();
+    XWPFParagraph para = null;
+    XWPFNum num = null;
+    List<XWPFParagraph> paraList = null;
+    Iterator<XWPFParagraph> paraIter = null;
+    BigInteger numID = null;
+    int numberingID = -1;
+    numbering = docx.getNumbering();
+    paraList = docx.getParagraphs();
+    paraIter = paraList.iterator();
+    Universe universe=null;
+    Book book=null;
+    Chapter chapter=null;
+    int chapNumber=1;
+    if(isNewChapter) {
+    	try {
+    		book=bookRepository.findByTitle(bookName).get();
+    		universe=book.getUniverseAssociated();
+    		if(numChapter==0) {
+    			chapNumber=book.getChapters().size()+1;
+    		}else {
+    			try {
+    			Chapter chapterToDelete=book.getChapters().stream().filter(x->x.getNumero()==numChapter).collect(Collectors.toList()).get(0);
+    			boolean delete=book.getChapters().remove(chapterToDelete);
+    			if(delete) {
+    			chapterRepository.delete(chapterToDelete);
+    			chapNumber=numChapter;
+    			}else {
+    				message="Fail To Delete Previous Chapter";
+    			}
+    			}catch(Exception e) {
+    				message="Chapter doesn't exist";
+    			}
+    		}
+    	}catch(Exception e) {
+    		message="Text doesn't exist";
+    	}
+    }
+    Scene scene=null;
+    Block block=null;
+    int sceneNumber=1;
+    int orderBlock=1;
+    if(message==null) {
+    while(paraIter.hasNext()) {
+  	  para = paraIter.next();
+  	  numID = para.getNumID();
+  	  if(para.getParagraphText().contains("<Universe>")) {
+  		  try {
+  			 if(!newUniverse) {
+  				 universe=universeRepository.findByTitle(para.getParagraphText().substring(10)).get();
+  			 }else {
+  				 universe=new Universe(para.getParagraphText().substring(10),1,null,null);
+  				 
+  				 
+  			 }
+  			 lc=LastCreated.Universe;
+  		  }catch(Exception e) {
+  			  if(newUniverse) {
+  				  message="Universe Already Existing";
+  			  }else {
+  				message="Universe Not Existing";
+  			  }
+  			  break;
+  		  }
+  	  }else if(para.getParagraphText().contains("<Text>")) {
+  		  try {
+  			  if(bookToReplace==null) {
+  			  book=bookRepository.findByTitle(para.getParagraphText().substring(6)).get();
+  			  message="Text Already Existing";
+  			  break;
+  			  }else {
+  				book=new Book(para.getParagraphText().substring(6),1,null,universe,null);
+  	  		  	universe.getBooks().add(book);
+  			  }
+  		  }catch(Exception e) {
+  		  book=new Book(para.getParagraphText().substring(6),1,null,universe,null);
+  		  universe.getBooks().add(book);
+  		  }
+  		  lc=LastCreated.Text;
+  	  }else if(para.getParagraphText().contains("<Chapitre>")) {
+  		  if(scene!=null && block.getScene_associated().getId()!=scene.getId()) {
+  			  scene.setChapter_associated(null);
+  			  chapter.getScenes().remove(scene);
+  		  }
+  		  
+  		  chapter=new Chapter(para.getParagraphText().substring(10),chapNumber,null,book,null);
+  		  book.getChapters().add(chapter);
+  		  
+  		  lc=LastCreated.Chapter;
+  		  chapNumber++;
+  		  scene=new Scene("Scene 1",1,null,chapter,null);
+  		  chapter.getScenes().add(scene);
+  		  sceneNumber=1;
+  		  orderBlock=1;
+  	  }else if(para.getParagraphText().contains("<Info>")) {
+  		  if(lc==LastCreated.Universe) {
+  			  universe.setInfo(universe.getTitle()+" : "+para.getParagraphText().substring(6));
+  			  
+  		  }else if(lc==LastCreated.Text) {
+  			  book.setInfo(book.getTitle()+" : "+para.getParagraphText().substring(6));
+  			  
+  		  }else if(lc==LastCreated.Chapter) {
+  			  chapter.setInfo(chapter.getTitle()+" : "+para.getParagraphText().substring(6));
+  			  
+  		  }else {
+  			  message="Info Target Not Find";
+  			 break;
+  		  }
+  	  }else {
+  	  if(numID != null) {
+  	  if(numID.intValue() != numberingID) {
+  	  num = numbering.getNum(numID);
+  	  numberingID = numID.intValue();
+  	  
+  	  if(!para.getParagraphText().isBlank() && para.getParagraphText()!=null) {
+  	  block=new Block(" - "+para.getParagraphText(),orderBlock,scene);
+	  scene.getBlocks().add(block);
+	  orderBlock++;
+  	  }
+  	  }
+  	  else {
+  		if(!para.getParagraphText().isBlank() && para.getParagraphText()!=null) {
+  		  block=new Block(" - "+para.getParagraphText(),orderBlock,scene);
+		  scene.getBlocks().add(block);
+		  orderBlock++;
+  		}
+  	  }
+  	  }
+  	  else {
+  		   if((para.getParagraphText().equals("") || para.getParagraphText()==null) && block.getScene_associated().getId()==scene.getId() && orderBlock>2) {
+  			  sceneNumber++;
+  			  scene=new Scene("Scene "+sceneNumber,sceneNumber,null,chapter,null);
+  			  chapter.getScenes().add(scene);
+  			  orderBlock=1;
+  		  }else {
+  			if(!para.getParagraphText().isBlank() && para.getParagraphText()!=null) {
+	  		  block=new Block(para.getParagraphText(),orderBlock,scene);
+	  		  scene.getBlocks().add(block);
+	  		  orderBlock++;
+  		  }
+  		  }
+  	  }
+  	 
+  	  }
+  	  }
+    }
+    if((scene!=null && block.getScene_associated().getId()!=scene.getId()) || scene.getBlocks().size()==0) {
+    	scene.setChapter_associated(null);
+		chapter.getScenes().remove(scene);
+	  }
+    
+    
+	if(message==null) {
+		if(bookToReplace!=null) {
+		universe.getBooks().remove(bookToReplace);
+		bookRepository.delete(bookToReplace);
+		}
+		universeRepository.save(universe);
+		message="Save Succeded";
+	}
+	} catch (IOException e) {
+		// TODO Auto-generated catch block
+	
+		message= e.getLocalizedMessage();
+	}catch(Exception e) {
+	message=e.getLocalizedMessage();	
+	}finally {
+		try {
+			docx.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			message=e.getLocalizedMessage();
+		}catch(Exception e) {
+			message=e.getLocalizedMessage();
+		}
+	}
+	return message;
+}
+
+public String Convert2(String location,boolean newUniverse,boolean isNewChapter,int numChapter,String bookName) {
 	XWPFDocument docx=null;
 	LastCreated lc=LastCreated.None;
 	String message = null;
