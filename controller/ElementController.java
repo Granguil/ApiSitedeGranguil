@@ -33,7 +33,6 @@ public class ElementController {
 	@GetMapping("/GetAttachedElements")
 	public AssociatedCode getAttachedElements(){
 		List<Code> list=codeService.getMapObject();
-		System.out.println("Code : "+list.get(0).getCode());
 		AssociatedCode elements=ACS.getAssociatedElement(list.get(0));
 		return elements;
 	}

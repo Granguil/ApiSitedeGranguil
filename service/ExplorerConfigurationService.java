@@ -15,6 +15,9 @@ public class ExplorerConfigurationService {
 @Autowired
 private ExplorerConfigurationRepository ecr;
 
+@Autowired
+private ResourceService resourceService;
+
 	public ExplorerConfigurationResponse getConfiguration(String name) {
 		ExplorerConfiguration ec=ecr.findByName(name).get();
 		ExplorerConfigurationResponse configResponse=new ExplorerConfigurationResponse();
@@ -28,7 +31,7 @@ private ExplorerConfigurationRepository ecr;
 		return configResponse;
 	}
 	
-	public StringResponse setConfiguration(ExplorerConfigurationRequest config) {
+	public StringResponse setConfiguration(ExplorerConfigurationRequest config,String language) {
 		StringResponse message=new StringResponse();
 		try {
 		ExplorerConfiguration ec=ecr.findByName(config.getName()).get();
@@ -37,7 +40,7 @@ private ExplorerConfigurationRepository ecr;
 		ec.setWithInfo(config.isWithInfo());
 		ec.setInfoPopup(config.isInfoPopup());
 		ecr.save(ec);
-		message.setMessage("Sauvegarde Réussie");
+		message.setMessage(resourceService.getValue(language, "saveSuccess"));
 		}catch(Exception e) {
 			message.setMessage(e.getMessage());
 		}

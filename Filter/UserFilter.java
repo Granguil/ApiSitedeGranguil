@@ -55,7 +55,9 @@ public class UserFilter implements Filter{
     String token=req.getHeader("x-auth-token");
     String pseudo=req.getHeader("pseudo");
     UUID role=UUID.fromString(req.getHeader("role"));
-    if(us.isAuthenticated(pseudo, role, token)) {
+    String language=us.isAuthenticated(pseudo, role, token);
+    if(language!=null) {
+    	request.setAttribute("language", language);
     	filterChain.doFilter(request, response);
     }else {
     	res.setHeader("Access-Control-Allow-Origin", "*");

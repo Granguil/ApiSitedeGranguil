@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,7 +32,7 @@ public class NavigationController {
 	
 	@CrossOrigin(origins="*")
 	@PostMapping(path="/add")
-	public String saveNavigation(@Validated @RequestBody NavigationSaveRequest navigation) {
-		return navigationService.saveNavigation(navigation);
+	public String saveNavigation(@Validated @RequestBody NavigationSaveRequest navigation,@RequestAttribute String language) {
+		return navigationService.saveNavigation(navigation,language);
 	}
 }

@@ -19,6 +19,7 @@ import granguil.data.entity.Idea;
 import granguil.data.entity.KeyWord;
 import granguil.data.entity.Navigation;
 import granguil.data.entity.Resource;
+import granguil.data.entity.ResourceForServer;
 import granguil.data.entity.Role;
 import granguil.data.entity.Secret;
 import granguil.data.entity.User;
@@ -31,6 +32,7 @@ import granguil.data.repository.CodeRepository;
 import granguil.data.repository.ExplorerConfigurationRepository;
 import granguil.data.repository.ModuleTypeRepository;
 import granguil.data.repository.NavigationRepository;
+import granguil.data.repository.ResourceForServerRepository;
 import granguil.data.repository.ResourceRepository;
 import granguil.data.repository.RoleRepository;
 import granguil.data.repository.SecretRepository;
@@ -50,7 +52,7 @@ public class GranguilDataApplication {
 	}
 
 	@Bean
-	public CommandLineRunner loadData(ExplorerConfigurationRepository ecr,ModuleTypeRepository moduleRepository,UserRepository userRepository, RoleRepository roleRepository, CodeRepository codeRepository,AssociatedCodeRepository ACR,SecretRepository secretRepository, NavigationRepository navigationRepository, ResourceRepository resourceRepository) {
+	public CommandLineRunner loadData(ResourceForServerRepository serverRepository,ExplorerConfigurationRepository ecr,ModuleTypeRepository moduleRepository,UserRepository userRepository, RoleRepository roleRepository, CodeRepository codeRepository,AssociatedCodeRepository ACR,SecretRepository secretRepository, NavigationRepository navigationRepository, ResourceRepository resourceRepository) {
 	return (args)->{
 		if(environment.equals("dev")) {
 		secretRepository.save(new Secret("Qui est le plus fort","Granguil"));
@@ -76,6 +78,12 @@ public class GranguilDataApplication {
 		resourceRepository.save(new Resource("Fra","contactTitle","General", "Contact","none"));
 		resourceRepository.save(new Resource("Fra","contactLink", "General","www.sitedegranguil.fr","none"));
 		resourceRepository.save(new Resource("Fra","contactMail", "General","guillaume.curabet@gmail.com","none"));
+		resourceRepository.save(new Resource("Ang","connected", "General","Sign In","none"));
+		resourceRepository.save(new Resource("Ang","slash","General", "/","none"));
+		resourceRepository.save(new Resource("Ang","subscribe","General", "Sign Up","none"));
+		resourceRepository.save(new Resource("Ang","contactTitle","General", "Contact","none"));
+		resourceRepository.save(new Resource("Ang","contactLink", "General","www.sitedegranguil.fr","none"));
+		resourceRepository.save(new Resource("Ang","contactMail", "General","guillaume.curabet@gmail.com","none"));
 		resourceRepository.save(new Resource("Fra","Reading", "ReadAndWrite","Lecture","nav"));
 		resourceRepository.save(new Resource("Fra","Home", "ReadAndWrite","Accueil","nav"));
 		resourceRepository.save(new Resource("Ang","Reading", "ReadAndWrite","Reading","nav"));
@@ -102,6 +110,127 @@ public class GranguilDataApplication {
 		resourceRepository.save(new Resource("Ang","TitleCard4", "ReadAndWrite","Blocks","explorer"));
 		resourceRepository.save(new Resource("Ang","createBookMark", "ReadAndWrite","N.B. :To create Bookmark, click on the button under the choosen scene.","explorer"));
 		resourceRepository.save(new Resource("Fra","createBookMark", "ReadAndWrite","N.B. :Pour créer un marque-page, cliquer sur le bouton en-dessous de la scène choisie.","explorer"));
+		resourceRepository.save(new Resource("Fra","importNewText","ReadAndWrite","Importer un nouveau texte","none"));
+		resourceRepository.save(new Resource("Ang","importNewText","ReadAndWrite","Import new text","none"));
+		resourceRepository.save(new Resource("Fra","updateText","ReadAndWrite","Mettre à jour un texte","none"));
+		resourceRepository.save(new Resource("Ang","updateText","ReadAndWrite","Update Text","none"));
+		resourceRepository.save(new Resource("Fra","newChapter","ReadAndWrite","Ajouter Chapiter","none"));
+		resourceRepository.save(new Resource("Ang","newChapter","ReadAndWrite","Add new chapter","none"));
+		resourceRepository.save(new Resource("Fra","updateChapter","ReadAndWrite","Mettre à jour chapitre","none"));
+		resourceRepository.save(new Resource("Ang","updateChapter","ReadAndWrite","Update chapter","none"));
+		resourceRepository.save(new Resource("Fra","newUniverse","ReadAndWrite","Nouvel Univers","none"));
+		resourceRepository.save(new Resource("Ang","newUniverse","ReadAndWrite","New Universe","none"));
+		resourceRepository.save(new Resource("Fra","existingUniverse","ReadAndWrite","Univers Existant","none"));
+		resourceRepository.save(new Resource("Ang","existingUniverse","ReadAndWrite","Existing Universe","none"));
+		resourceRepository.save(new Resource("Fra","nameWordFile","ReadAndWrite","Nom du fichier","none"));
+		resourceRepository.save(new Resource("Ang","nameWordFile","ReadAndWrite","File Name","none"));
+		resourceRepository.save(new Resource("Fra","wordFileToImport","ReadAndWrite","Fichier à Importer","none"));
+		resourceRepository.save(new Resource("Ang","wordFileToImport","ReadAndWrite","File toImport","none"));
+		resourceRepository.save(new Resource("Fra","validate","ReadAndWrite","valider","none"));
+		resourceRepository.save(new Resource("Ang","validate","ReadAndWrite","validate","none"));
+		resourceRepository.save(new Resource("Fra","universe","ReadAndWrite","univers","none"));
+		resourceRepository.save(new Resource("Ang","universe","ReadAndWrite","universe","none"));
+		resourceRepository.save(new Resource("Fra","textName","ReadAndWrite","Nom du Texte","none"));
+		resourceRepository.save(new Resource("Ang","textName","ReadAndWrite","Text Name","none"));
+		resourceRepository.save(new Resource("Fra","numChapter","ReadAndWrite","Numero du chapitre","none"));
+		resourceRepository.save(new Resource("Ang","numChapter","ReadAndWrite","Chapter Number","none"));
+		resourceRepository.save(new Resource("Fra","name","ReadAndWrite","Nom","none"));
+		resourceRepository.save(new Resource("Ang","name","ReadAndWrite","Name","none"));
+		resourceRepository.save(new Resource("Fra","numberCard","ReadAndWrite","Nombre de Cartes","none"));
+		resourceRepository.save(new Resource("Ang","numberCard","ReadAndWrite","Number of Cards","none"));
+		resourceRepository.save(new Resource("Fra","loadAll","ReadAndWrite","Tout Charger","none"));
+		resourceRepository.save(new Resource("Ang","loadAll","ReadAndWrite","Load All","none"));
+		resourceRepository.save(new Resource("Fra","displayAll","ReadAndWrite","Tout Afficher","none"));
+		resourceRepository.save(new Resource("Ang","displayAll","ReadAndWrite","Dispaly All","none"));
+		resourceRepository.save(new Resource("Fra","withInfo","ReadAndWrite","Afficher Info","none"));
+		resourceRepository.save(new Resource("Ang","withInfo","ReadAndWrite","Display Info","none"));
+		resourceRepository.save(new Resource("Fra","infoInPopup","ReadAndWrite","Afficher info dans une Popup","none"));
+		resourceRepository.save(new Resource("Ang","infoInPopup","ReadAndWrite","Display info in Popup","none"));
+		resourceRepository.save(new Resource("Fra","edit","ReadAndWrite","Modifier","none"));
+		resourceRepository.save(new Resource("Ang","edit","ReadAndWrite","Edit","none"));
+		resourceRepository.save(new Resource("Fra","apply","ReadAndWrite","Appliquer","none"));
+		resourceRepository.save(new Resource("Ang","apply","ReadAndWrite","Apply","none"));
+		resourceRepository.save(new Resource("Fra","save","ReadAndWrite","Sauvegarder","none"));
+		resourceRepository.save(new Resource("Ang","save","ReadAndWrite","Save","none"));
+		resourceRepository.save(new Resource("Fra","saveConfig","ReadAndWrite","Sauvegarder Configuration","none"));
+		resourceRepository.save(new Resource("Ang","saveConfig","ReadAndWrite","Save Configuration","none"));
+		resourceRepository.save(new Resource("Fra","loading","ReadAndWrite","Chargement...","none"));
+		resourceRepository.save(new Resource("Ang","loading","ReadAndWrite","Loading...","none"));
+		resourceRepository.save(new Resource("Fra","newBlock","ReadAndWrite","Ajouter un Bloc","none"));
+		resourceRepository.save(new Resource("Ang","newlBlock","ReadAndWrite","Add new Block","none"));
+		resourceRepository.save(new Resource("Fra","saveBlocks","ReadAndWrite","Sauvegarder ce Bloc","none"));
+		resourceRepository.save(new Resource("Ang","saveBlocks","ReadAndWrite","Save this Block","none"));
+		resourceRepository.save(new Resource("Fra","saveAndPublish","ReadAndWrite","Sauvegarder et Publier la Scène","none"));
+		resourceRepository.save(new Resource("Ang","saveAndPublish","ReadAndWrite","Save and Publish the scene","none"));
+		resourceRepository.save(new Resource("Fra","deleteBlock","ReadAndWrite","Supprimer ce Bloc","none"));
+		resourceRepository.save(new Resource("Ang","deleteBlock","ReadAndWrite","Delete this Block","none"));
+		resourceRepository.save(new Resource("Fra","cancel","ReadAndWrite","Annuler","none"));
+		resourceRepository.save(new Resource("Ang","cancel","ReadAndWrite","Cancel","none"));
+		resourceRepository.save(new Resource("Fra","book","ReadAndWrite","Livre","none"));
+		resourceRepository.save(new Resource("Ang","book","ReadAndWrite","Book","none"));
+		resourceRepository.save(new Resource("Fra","chapter","ReadAndWrite","Chapitre","none"));
+		resourceRepository.save(new Resource("Ang","chapter","ReadAndWrite","Chapter","none"));
+		resourceRepository.save(new Resource("Fra","scene","ReadAndWrite","Scène","none"));
+		resourceRepository.save(new Resource("Ang","scene","ReadAndWrite","Scene","none"));
+		resourceRepository.save(new Resource("Fra","addBlock","ReadAndWrite","Ajouter Bloc","none"));
+		resourceRepository.save(new Resource("Ang","addBlock","ReadAndWrite","Add Block","none"));
+		resourceRepository.save(new Resource("Fra","orderOfNewBlock","ReadAndWrite","Order du nouveau Bloc","none"));
+		resourceRepository.save(new Resource("Ang","orderOfNewBlock","ReadAndWrite","Order of the new Block","none"));
+		resourceRepository.save(new Resource("Fra","outOfBounds","ReadAndWrite","Hors Limites","none"));
+		resourceRepository.save(new Resource("Ang","outOfBounds","ReadAndWrite","Out of Bounds","none"));
+		resourceRepository.save(new Resource("Fra","invalidOrderNewBlock","ReadAndWrite","Ordre invalide pour le nouveau bloc","none"));
+		resourceRepository.save(new Resource("Ang","invalidOrderNewBlock","ReadAndWrite","Invalid order for the new Block","none"));
+		resourceRepository.save(new Resource("Fra","blockNum","ReadAndWrite","Bloc n°","none"));
+		resourceRepository.save(new Resource("Ang","blockNum","ReadAndWrite","Block n°","none"));
+		resourceRepository.save(new Resource("Fra","success","ReadAndWrite","Succès","none"));
+		resourceRepository.save(new Resource("Ang","success","ReadAndWrite","Success","none"));
+		resourceRepository.save(new Resource("Fra","fail","ReadAndWrite","Echec","none"));
+		resourceRepository.save(new Resource("Ang","fail","ReadAndWrite","Fail","none"));
+		resourceRepository.save(new Resource("Fra","successCreation","ReadAndWrite","Succès de la création","none"));
+		resourceRepository.save(new Resource("Ang","successCreation","ReadAndWrite","Success to Create","none"));
+		resourceRepository.save(new Resource("Fra","failCreation","ReadAndWrite","Echec de la création","none"));
+		resourceRepository.save(new Resource("Ang","failCreation","ReadAndWrite","Fail to Create","none"));
+		resourceRepository.save(new Resource("Fra","markAsRead","ReadAndWrite","Marqué comme lu","none"));
+		resourceRepository.save(new Resource("Ang","markAsRead","ReadAndWrite","Mark as Read","none"));
+		resourceRepository.save(new Resource("Fra","failMarkAsRead","ReadAndWrite","Echec du marquage","none"));
+		resourceRepository.save(new Resource("Ang","failMarkAsRead","ReadAndWrite","Fail to Mark as read","none"));
+		resourceRepository.save(new Resource("Fra","delete","ReadAndWrite","Suppression","none"));
+		resourceRepository.save(new Resource("Ang","delete","ReadAndWrite","Delete","none"));
+		resourceRepository.save(new Resource("Fra","deleteBookmark","ReadAndWrite","Marque-Page Supprimé","none"));
+		resourceRepository.save(new Resource("Ang","deleteBookmark","ReadAndWrite","Bookmark deleted","none"));
+		resourceRepository.save(new Resource("Fra","close","ReadAndWrite","Fermer","none"));
+		resourceRepository.save(new Resource("Ang","close","ReadAndWrite","Close","none"));
+		resourceRepository.save(new Resource("Fra","creatorTitle","ReadAndWrite","Créé et Administré par Granguil","none"));
+		resourceRepository.save(new Resource("Ang","creatorTitle","ReadAndWrite","Created and Managed by Granguil","none"));
+		
+		serverRepository.save(new ResourceForServer("Fra","saveSuccess","Sauvegarder avec Succès"));
+		serverRepository.save(new ResourceForServer("Ang","saveSuccess","Save with Success"));
+		serverRepository.save(new ResourceForServer("Fra","saveFail","Echec de la sauvegarde"));
+		serverRepository.save(new ResourceForServer("Ang","saveFail","Fail to Save"));
+		serverRepository.save(new ResourceForServer("Fra","navigationSaved","Navigation Sauvegardée"));
+		serverRepository.save(new ResourceForServer("Ang","navigationSaved","Navigation Saved"));
+		serverRepository.save(new ResourceForServer("Fra","resourceSaved","Ressource Sauvegardée"));
+		serverRepository.save(new ResourceForServer("Ang","resourceSaved","Resource Saved"));
+		serverRepository.save(new ResourceForServer("Fra","secretSaved","Secret Sauvegardé"));
+		serverRepository.save(new ResourceForServer("Ang","secretSaved","Secret Saved"));
+		serverRepository.save(new ResourceForServer("Fra","notExistFor"," n'existe pas pour "));
+		serverRepository.save(new ResourceForServer("Ang","notExistFor"," doesn't exist for "));
+		serverRepository.save(new ResourceForServer("Fra","updateSuccess","Mise-à-jour Réussi"));
+		serverRepository.save(new ResourceForServer("Ang","updateSuccess","Update with Success"));
+		serverRepository.save(new ResourceForServer("Fra","targetNotFind","Cible de l'info non trouvée"));
+		serverRepository.save(new ResourceForServer("Ang","targetNotFind","Info Target doesn't find"));
+		serverRepository.save(new ResourceForServer("Fra","universeNotExist","L'univers n'existe pas"));
+		serverRepository.save(new ResourceForServer("Ang","universeNotExist","Universe doesn't exist"));
+		serverRepository.save(new ResourceForServer("Fra","universeAlreadyExist","L'univers existe déjà"));
+		serverRepository.save(new ResourceForServer("Ang","universeAlreadyExist","Universe Already Exists"));
+		serverRepository.save(new ResourceForServer("Fra","bookNotExist","Le livre n'existe pas"));
+		serverRepository.save(new ResourceForServer("Ang","bookNotExist","Book doesn't exist"));
+		serverRepository.save(new ResourceForServer("Fra","chapterNotExist","Le chapitre n'existe pas"));
+		serverRepository.save(new ResourceForServer("Ang","chapterNotExist","Chapter doesn't exist"));
+		serverRepository.save(new ResourceForServer("Fra","failToDeleteChapter","Echec de la suppression du chapitre"));
+		serverRepository.save(new ResourceForServer("Ang","failToDeleteChapter","Fail to delete chapter"));
+		
+		
 		
 		ecr.save(new ExplorerConfiguration("explorer",true,true,4,true,true));
 		
@@ -173,7 +302,7 @@ public class GranguilDataApplication {
 		manager.setMd("efo2dbpFs6ca");
 		manager.setRole(managerRole);
 		manager.setToken1("Token1");
-		manager.setLanguage("Fra");
+		manager.setLanguage("Ang");
 		manager.setUrlHome("/Accueil/Admin/Home");
 		userRepository.save(manager);
 		}catch(Exception e) {

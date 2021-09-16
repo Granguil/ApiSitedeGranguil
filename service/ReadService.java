@@ -75,11 +75,14 @@ UserRepository userRepository;
 @Autowired
 ReadUserRepository readUserRepository;
 
+@Autowired
+ResourceService resourceService;
+
 private enum LastCreated{
 	Universe,Text,Chapter,None
 }
 
-public String saveBlocks(BlockListRequest blr) {
+public String saveBlocks(BlockListRequest blr,String language) {
 	String message="";
 	try{
 		Scene scene=sceneRepository.findById(blr.parent).get();
@@ -119,7 +122,7 @@ public String saveBlocks(BlockListRequest blr) {
 			}
 		}
 		sceneRepository.save(scene);
-		message="Update Success";
+		message=resourceService.getValue(language, "updateSuccess");
 	}catch(Exception e) {
 		System.out.println(e.getMessage());
 		message=e.getLocalizedMessage();
@@ -219,9 +222,6 @@ public void deleteBookMark(UUID id) {
 public void isReading(BookMarkRequest bmr) {
 	User user=userRepository.findByPseudo(bmr.getUser()).get();
 	Universe universe=universeRepository.findById(bmr.getUniverse()).get();
-	/*Book book=universe.getBooks().stream().filter(x->x.getId()==bmr.getBook()).collect(Collectors.toList()).get(0);
-	Chapter chapter=book.getChapters().stream().filter(x->x.getId()==bmr.getChapter()).collect(Collectors.toList()).get(0);
-	Scene scene=chapter.getScenes().stream().filter(x->x.getId()==bmr.getScene()).collect(Collectors.toList()).get(0);*/
 	Book book=bookRepository.findById(bmr.getBook()).get();
 	Chapter chapter=chapterRepository.findById(bmr.getChapter()).get();
 	Scene scene=sceneRepository.findById(bmr.getScene()).get();
@@ -289,23 +289,6 @@ public void isReading(BookMarkRequest bmr) {
 		ruScene.setUser(user);
 		readUserRepository.save(ruScene);
 	}
-	/*if(scene.getReadUser().stream().filter(x->x.getUser().getPseudo().equals(bmr.getUser())).collect(Collectors.toList()).size()==0) {
-	ReadUser ruScene=new ReadUser();
-	ruScene.setScene(scene);
-	ruScene.setUser(user);
-	ruScene.setReadState(ReadState.Finished);
-	readUserRepository.save(ruScene);
-	ReadUser ruChapter=new ReadUser();
-	if(chapter.getScenes().stream().filter(x->x.getReadUser().stream().filter(y->y.getUser().getPseudo().equals(bmr.getUser())))) {
-	ruChapter.setChapter(chapter);
-	ruChapter.setUser(user);
-	ruChapter.set
-	}else {
-		
-	}
-	}else {
-		System.out.println("Skip");
-	}*/
 }
 
 public Book searchText(String universe,String textName) {
@@ -334,7 +317,7 @@ public boolean isTextInUniverse(String bookName, String universe) {
 	}
 }
 
-public String Convert(String location,boolean newUniverse,boolean isNewChapter,int numChapter,String bookName,Book bookToReplace) {
+public String Convert(String location,boolean newUniverse,boolean isNewChapter,int numChapter,String bookName,Book bookToReplace,String language) {
 	XWPFDocument docx=null;
 	LastCreated lc=LastCreated.None;
 	String message = null;
@@ -369,14 +352,14 @@ public String Convert(String location,boolean newUniverse,boolean isNewChapter,i
     			chapterRepository.delete(chapterToDelete);
     			chapNumber=numChapter;
     			}else {
-    				message="Fail To Delete Previous Chapter";
+    				message=resourceService.getValue(language, "failToDeleteChapter");
     			}
     			}catch(Exception e) {
-    				message="Chapter doesn't exist";
+    				message=resourceService.getValue(language, "chapterNotExist");
     			}
     		}
     	}catch(Exception e) {
-    		message="Text doesn't exist";
+    		message=resourceService.getValue(language, "bookNotExist");
     	}
     }
     Scene scene=null;
@@ -399,9 +382,9 @@ public String Convert(String location,boolean newUniverse,boolean isNewChapter,i
   			 lc=LastCreated.Universe;
   		  }catch(Exception e) {
   			  if(newUniverse) {
-  				  message="Universe Already Existing";
+  				  message=resourceService.getValue(language, "universeAlreadyExist");
   			  }else {
-  				message="Universe Not Existing";
+  				message=resourceService.getValue(language, "universeNotExist");
   			  }
   			  break;
   		  }
@@ -446,7 +429,7 @@ public String Convert(String location,boolean newUniverse,boolean isNewChapter,i
   			  chapter.setInfo(chapter.getTitle()+" : "+para.getParagraphText().substring(6));
   			  
   		  }else {
-  			  message="Info Target Not Find";
+  			  message=resourceService.getValue(language, "targetNotFind");
   			 break;
   		  }
   	  }else {
@@ -499,7 +482,7 @@ public String Convert(String location,boolean newUniverse,boolean isNewChapter,i
 		bookRepository.delete(bookToReplace);
 		}
 		universeRepository.save(universe);
-		message="Save Succeded";
+		message=resourceService.getValue(language, "saveSuccess");
 	}
 	} catch (IOException e) {
 		// TODO Auto-generated catch block
@@ -520,172 +503,4 @@ public String Convert(String location,boolean newUniverse,boolean isNewChapter,i
 	return message;
 }
 
-public String Convert2(String location,boolean newUniverse,boolean isNewChapter,int numChapter,String bookName) {
-	XWPFDocument docx=null;
-	LastCreated lc=LastCreated.None;
-	String message = null;
-	try {
-		docx = new XWPFDocument(new FileInputStream(location));
-	
-    XWPFNumbering numbering=new XWPFNumbering();
-    XWPFParagraph para = null;
-    XWPFNum num = null;
-    List<XWPFParagraph> paraList = null;
-    Iterator<XWPFParagraph> paraIter = null;
-    BigInteger numID = null;
-    int numberingID = -1;
-    numbering = docx.getNumbering();
-    paraList = docx.getParagraphs();
-    paraIter = paraList.iterator();
-    Universe universe=null;
-    Book book=null;
-    Chapter chapter=null;
-    int chapNumber=1;
-    if(isNewChapter) {
-    	try {
-    		book=bookRepository.findByTitle(bookName).get();
-    		if(numChapter==0) {
-    			chapNumber=book.getChapters().size()+1;
-    		}else {
-    			try {
-    			Chapter chapterToDelete=book.getChapters().stream().filter(x->x.getNumero()==numChapter).collect(Collectors.toList()).get(0);
-    			boolean delete=book.getChapters().remove(chapterToDelete);
-    			if(delete) {
-    			chapterRepository.delete(chapterToDelete);
-    			chapNumber=numChapter;
-    			}else {
-    				message="Fail To Delete Previous Chapter";
-    			}
-    			}catch(Exception e) {
-    				message="Chapter doesn't exist";
-    			}
-    		}
-    	}catch(Exception e) {
-    		message="Text doesn't exist";
-    	}
-    }
-    Scene scene=null;
-    Block block=null;
-    int sceneNumber=1;
-    int orderBlock=1;
-    if(message==null) {
-    while(paraIter.hasNext()) {
-  	  para = paraIter.next();
-  	  numID = para.getNumID();
-  	  if(para.getParagraphText().contains("<Universe>")) {
-  		  try {
-  			 if(!newUniverse) {
-  				 universe=universeRepository.findByTitle(para.getParagraphText().substring(10)).get();
-  			 }else {
-  				 universe=new Universe(para.getParagraphText().substring(10),1,null,null);
-  				 universeRepository.save(universe);
-  				 
-  			 }
-  			 lc=LastCreated.Universe;
-  		  }catch(Exception e) {
-  			  if(newUniverse) {
-  				  message="Universe Already Existing";
-  			  }else {
-  				message="Universe Not Existing";
-  			  }
-  			  break;
-  		  }
-  	  }else if(para.getParagraphText().contains("<Text>")) {
-  		  try {
-  			  book=bookRepository.findByTitle(para.getParagraphText().substring(6)).get();
-  			  message="Text Already Existing";
-  			  break;
-  		  }catch(Exception e) {
-  		  book=new Book(para.getParagraphText().substring(6),1,null,universe,null);
-  		  bookRepository.save(book);
-  		  }
-  		  lc=LastCreated.Text;
-  	  }else if(para.getParagraphText().contains("<Chapitre>")) {
-  		  if(scene!=null && block.getScene_associated().getId()!=scene.getId()) {
-  			  sceneRepository.delete(scene);
-  		  }
-  		  
-  		  chapter=new Chapter(para.getParagraphText().substring(10),chapNumber,null,book,null);
-  		  chapterRepository.save(chapter);
-  		  
-  		  lc=LastCreated.Chapter;
-  		  chapNumber++;
-  		  scene=new Scene("Scene 1",1,null,chapter,null);
-  		  sceneRepository.save(scene);
-  		  sceneNumber=1;
-  		  orderBlock=1;
-  	  }else if(para.getParagraphText().contains("<Info>")) {
-  		  if(lc==LastCreated.Universe) {
-  			  universe.setInfo(universe.getTitle()+" : "+para.getParagraphText().substring(6));
-  			  universeRepository.save(universe);
-  		  }else if(lc==LastCreated.Text) {
-  			  book.setInfo(book.getTitle()+" : "+para.getParagraphText().substring(6));
-  			  bookRepository.save(book);
-  		  }else if(lc==LastCreated.Chapter) {
-  			  chapter.setInfo(chapter.getTitle()+" : "+para.getParagraphText().substring(6));
-  			  chapterRepository.save(chapter);
-  		  }else {
-  			  message="Info Target Not Find";
-  			 break;
-  		  }
-  	  }else {
-  	  if(numID != null) {
-  	  if(numID.intValue() != numberingID) {
-  	  num = numbering.getNum(numID);
-  	  numberingID = numID.intValue();
-  	  
-  	  if(!para.getParagraphText().isBlank() && para.getParagraphText()!=null) {
-  	  block=new Block(" - "+para.getParagraphText(),orderBlock,scene);
-	  blockRepository.save(block);
-	  orderBlock++;
-  	  }
-  	  }
-  	  else {
-  		if(!para.getParagraphText().isBlank() && para.getParagraphText()!=null) {
-  		  block=new Block(" - "+para.getParagraphText(),orderBlock,scene);
-		  blockRepository.save(block);
-		  orderBlock++;
-  		}
-  	  }
-  	  }
-  	  else {
-  		   if((para.getParagraphText().equals("") || para.getParagraphText()==null) && block.getScene_associated().getId()==scene.getId() && orderBlock>2) {
-  			  sceneNumber++;
-  			  scene=new Scene("Scene "+sceneNumber,sceneNumber,null,chapter,null);
-  			  sceneRepository.save(scene);
-  			  orderBlock=1;
-  		  }else {
-  			if(!para.getParagraphText().isBlank() && para.getParagraphText()!=null) {
-	  		  block=new Block(para.getParagraphText(),orderBlock,scene);
-	  		  blockRepository.save(block);
-	  		  orderBlock++;
-  		  }
-  		  }
-  	  }
-  	 
-  	  }
-  	  }
-    }
-    if(scene!=null && block.getScene_associated().getId()!=scene.getId()) {
-		  sceneRepository.delete(scene);
-	  }
-    
-    
-	if(message==null) {
-		message="Save Succeded";
-	}
-	} catch (IOException e) {
-		// TODO Auto-generated catch block
-	
-		message= e.getLocalizedMessage();
-	}finally {
-		try {
-			docx.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			message=e.getLocalizedMessage();
-		}
-	}
-	return message;
-}
 }

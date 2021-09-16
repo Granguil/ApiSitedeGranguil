@@ -18,17 +18,20 @@ public class NavigationService {
 	@Autowired
 	NavigationRepository navigationRepository;
 	
+	@Autowired
+	ResourceService resourceService;
+	
 	public List<NavigationResponse> getNavigation(NavigationRequest navigationRequest){
 		List<Navigation> navigation=navigationRepository.findByRoleAndSite(navigationRequest.getRole(), navigationRequest.getSite()).get();
 		List<NavigationResponse> list=NavigationMapper.getNavigationList(navigation);
 		return list;
 	}
 	
-	public String saveNavigation(NavigationSaveRequest navigationRequest) {
+	public String saveNavigation(NavigationSaveRequest navigationRequest,String language) {
 		Navigation navigation=NavigationMapper.saveNavigation(navigationRequest);
 		try {
 			navigationRepository.save(navigation);
-			return "Navigation Enregistrée";
+			return resourceService.getValue(language, "navigationSaved");
 		}catch(Exception e) {
 			return e.getMessage();
 		}

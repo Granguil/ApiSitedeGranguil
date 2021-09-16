@@ -17,13 +17,13 @@ public class UserService {
 	@Autowired
 	RoleService roleService;
 
-	public boolean isAuthenticated(String pseudo,UUID roleCode,String token) {
+	public String isAuthenticated(String pseudo,UUID roleCode,String token) {
 		Role role=roleService.getRoleByCode(roleCode);
 		try {
-		userRepository.findByPseudoAndRoleAndToken1(pseudo, role, token).get();
-		return true;
+		User user=userRepository.findByPseudoAndRoleAndToken1(pseudo, role, token).get();
+		return user.getLanguage();
 		}catch(Exception e) {
-			return false;
+			return null;
 		}
 	}
 }

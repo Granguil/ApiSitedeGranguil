@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,6 +26,7 @@ import granguil.data.response.ReadResponse;
 import granguil.data.response.StringResponse;
 import granguil.data.service.FileLocationService;
 import granguil.data.service.ReadService;
+import granguil.data.service.ResourceService;
 
 @RestController
 @RequestMapping("Read")
@@ -34,6 +36,9 @@ ReadService readService;
 
 @Autowired
 FileLocationService fileLocationService;
+
+@Autowired
+ResourceService resourceService;
 
 @GetMapping("/All/{pseudo}")
 @CrossOrigin(origins="*")
@@ -51,9 +56,9 @@ public ReadResponse getContentById(@PathVariable(name="level")int level,@PathVar
 
 @PostMapping("/NewText")
 @CrossOrigin(origins="*")
-StringResponse uploadWord(@RequestParam MultipartFile newText,@RequestParam String nameFile,@RequestParam boolean NewUniverse) throws Exception {
+StringResponse uploadWord(@RequestParam MultipartFile newText,@RequestParam String nameFile,@RequestParam boolean NewUniverse,@RequestAttribute String language) throws Exception {
 	String location= fileLocationService.save(newText.getBytes(), newText.getOriginalFilename(),nameFile);
-    String message=readService.Convert(location,NewUniverse,false,0,null,null);
+    String message=readService.Convert(location,NewUniverse,false,0,null,null,language);
     StringResponse sr=new StringResponse();
     sr.setMessage(message);
     return sr;
@@ -61,14 +66,14 @@ StringResponse uploadWord(@RequestParam MultipartFile newText,@RequestParam Stri
 
 @PostMapping("/UpdateText")
 @CrossOrigin(origins="*")
-StringResponse updateText(@RequestParam MultipartFile newText,@RequestParam String nameFile,@RequestParam String universe,@RequestParam String textName) throws Exception {
+StringResponse updateText(@RequestParam MultipartFile newText,@RequestParam String nameFile,@RequestParam String universe,@RequestParam String textName,@RequestAttribute String language) throws Exception {
 	String message="";
 	Book book=readService.searchText(universe,textName);
 	if(book!=null) {
 		String location= fileLocationService.save(newText.getBytes(), newText.getOriginalFilename(),nameFile);
-	    message=readService.Convert(location,false,false,0,null,book);
+	    message=readService.Convert(location,false,false,0,null,book,language);
 	}else {
-		message=textName+" doesn't exist for "+universe;
+		message=textName+resourceService.getValue(language, "notExistFor")+universe;
 	}
 	StringResponse sr=new StringResponse();
     sr.setMessage(message);
@@ -77,13 +82,13 @@ StringResponse updateText(@RequestParam MultipartFile newText,@RequestParam Stri
 
 @PostMapping("/NewChapter")
 @CrossOrigin(origins="*")
-StringResponse newChapter(@RequestParam MultipartFile newText,@RequestParam String nameFile,@RequestParam String universe, @RequestParam String textName) throws Exception {
+StringResponse newChapter(@RequestParam MultipartFile newText,@RequestParam String nameFile,@RequestParam String universe, @RequestParam String textName,@RequestAttribute String language) throws Exception {
 	String message="";
     if(readService.isTextInUniverse(textName, universe)) {
     	String location= fileLocationService.save(newText.getBytes(), newText.getOriginalFilename(),nameFile);
-	    message=readService.Convert(location,false,true,0,textName,null);
+	    message=readService.Convert(location,false,true,0,textName,null,language);
     }else {
-    	message="No Text with its name in the "+universe;
+    	message=textName+resourceService.getValue(language, "notExistFor")+universe;
     }
 	StringResponse sr=new StringResponse();
     sr.setMessage(message);
@@ -92,13 +97,13 @@ StringResponse newChapter(@RequestParam MultipartFile newText,@RequestParam Stri
 
 @PostMapping("/UpdateChapter")
 @CrossOrigin(origins="*")
-StringResponse updateChapter(@RequestParam MultipartFile newText,@RequestParam String nameFile,@RequestParam String universe, @RequestParam String textName,@RequestParam int numero) throws Exception {
+StringResponse updateChapter(@RequestParam MultipartFile newText,@RequestParam String nameFile,@RequestParam String universe, @RequestParam String textName,@RequestParam int numero,@RequestAttribute String language) throws Exception {
 	String message="";
 	if(readService.isTextInUniverse(textName, universe)) {
     	String location= fileLocationService.save(newText.getBytes(), newText.getOriginalFilename(),nameFile);
-	    message=readService.Convert(location,false,true,numero,textName,null);
+	    message=readService.Convert(location,false,true,numero,textName,null,language);
     }else {
-    	message="No Text with its name in the "+universe;
+    	message=textName+resourceService.getValue(language, "notExistFor")+universe;
     }
     StringResponse sr=new StringResponse();
     sr.setMessage(message);
@@ -148,7 +153,6 @@ boolean isReading(@Validated @RequestBody BookMarkRequest bmr) {
 		readService.isReading(bmr);
 		return true;
 	}catch(Exception e) {
-		System.out.println("Controller : "+e.getMessage());
 		return false;
 	}
 }
@@ -170,10 +174,9 @@ BlockListResponse getAllBlockForConfig(@PathVariable(name="id") String id) {
 
 @PostMapping("/SaveBlocksForScene")
 @CrossOrigin(origins="*")
-StringResponse saveBlocksForScene(@RequestBody @Validated BlockListRequest blr) {
-	System.out.println("Id : "+blr.blocks.get(0).getId());
+StringResponse saveBlocksForScene(@RequestBody @Validated BlockListRequest blr,@RequestAttribute String language) {
 	StringResponse sr=new StringResponse();
-	sr.setMessage(readService.saveBlocks(blr));
+	sr.setMessage(readService.saveBlocks(blr,language));
 	return sr;
 }
 }

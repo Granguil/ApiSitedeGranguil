@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,7 +32,7 @@ public class ExplorerConfigurationController {
 	
 	@CrossOrigin(origins="*")
 	@PostMapping("/SetConfig")
-	public StringResponse setConfig(@RequestBody @Validated ExplorerConfigurationRequest ecr) {
-		return ecs.setConfiguration(ecr);
+	public StringResponse setConfig(@RequestBody @Validated ExplorerConfigurationRequest ecr, @RequestAttribute String language) {
+		return ecs.setConfiguration(ecr,language);
 	}
 }

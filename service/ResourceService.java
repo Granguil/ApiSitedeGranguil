@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import granguil.data.entity.Resource;
+import granguil.data.entity.ResourceForServer;
 import granguil.data.mapper.ResourceMapper;
+import granguil.data.repository.ResourceForServerRepository;
 import granguil.data.repository.ResourceRepository;
 import granguil.data.request.ResourceRequest;
 
@@ -19,6 +21,9 @@ import granguil.data.request.ResourceRequest;
 public class ResourceService {
 	@Autowired
 	ResourceRepository resourceRepository;
+	
+	@Autowired
+	ResourceForServerRepository serverRepository;
 	
 	public Map<String,Object> getResources (String language,String site){
 		List<String> siteandgeneral=new ArrayList<> (Arrays.asList("General",site));
@@ -43,17 +48,26 @@ public class ResourceService {
 		return resources;
 	}
 	
-	public String addResources (ResourceRequest resourceRequest) {
+	public String addResources (ResourceRequest resourceRequest,String language) {
 		Resource resource=new Resource();
 		resource.setLanguage(resourceRequest.getLanguage());
 		resource.setName(resourceRequest.getKey());
 		resource.setValue(resourceRequest.getValue());
 		try {
 		resourceRepository.save(resource);
-		return "Resource Enregistrée";
+		return this.getValue(language, "resourceSaved");
 		}catch(Exception e) {
 			return e.getMessage();
 		}
 		
+	}
+	
+	public String getValue(String language,String name) {
+		try {
+		ResourceForServer rfc= serverRepository.findByLanguageAndName(language, name).get();
+		return rfc.getValue();
+		}catch(Exception e) {
+			return name;
+		}
 	}
 }

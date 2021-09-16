@@ -18,17 +18,20 @@ public class SecretService {
 	@Autowired
 	SecretRepository SR;
 	
+	@Autowired
+	ResourceService resourceService;
+	
 	public SecretResponse getResponse(String question) {
 		Secret secret=SR.findByQuestion(question).get();
 		SecretResponse secretResponse=SecretMapper.getSecret(secret);
 		return secretResponse;
 	}
 	
-	public String saveSecret(SecretRequest secret) {
+	public String saveSecret(SecretRequest secret,String language) {
 		Secret secretToSave=SecretMapper.saveSecret(secret);
 		try {
 		SR.save(secretToSave);
-		return "Secret Enregistré";
+		return resourceService.getValue(language, "secretSaved");
 		}catch(Exception e){
 			return e.getMessage();
 		}

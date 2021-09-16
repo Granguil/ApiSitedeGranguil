@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,8 +38,8 @@ public class SecretController {
 	
 	@CrossOrigin(origins="*")
 	@PostMapping(path="/add")
-	public String saveSecret(@Validated @RequestBody SecretRequest secret) {
-		String message=secretService.saveSecret(secret);
+	public String saveSecret(@Validated @RequestBody SecretRequest secret,@RequestAttribute String language) {
+		String message=secretService.saveSecret(secret,language);
 		return message;
 	}
 }
