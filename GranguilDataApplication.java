@@ -230,8 +230,6 @@ public class GranguilDataApplication {
 		serverRepository.save(new ResourceForServer("Fra","failToDeleteChapter","Echec de la suppression du chapitre"));
 		serverRepository.save(new ResourceForServer("Ang","failToDeleteChapter","Fail to delete chapter"));
 		
-		
-		
 		ecr.save(new ExplorerConfiguration("explorer",true,true,4,true,true));
 		
 		navigationRepository.save(new Navigation("Groupe1","Granguil",null,UUID.fromString("65d6375a-69de-4e15-ba96-107ffd451b3a"),"GestiondeProjet"));
